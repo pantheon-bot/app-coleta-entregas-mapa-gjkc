@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Map } from '@/components/map';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Dynamically import Map component to avoid SSR issues with Leaflet
+const Map = dynamic(() => import('@/components/map').then(mod => ({ default: mod.Map })), {
+  ssr: false,
+  loading: () => <div className="h-[500px] rounded-lg bg-gray-100 flex items-center justify-center">Loading map...</div>
+});
 
 interface Collector {
   id: number;

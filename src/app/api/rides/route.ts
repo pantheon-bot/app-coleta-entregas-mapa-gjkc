@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
     // Filter by status if provided
     if (status) {
       // Split comma-separated statuses for multiple status filter
-      const statuses = status.split(',');
+      const statuses = status.split(',') as Array<'PENDING' | 'ACCEPTED' | 'REJECTED' | 'AT_CLIENT' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED'>;
       if (statuses.length > 1) {
         query = query.where('rides.status', 'in', statuses);
       } else {
-        query = query.where('rides.status', '=', status);
+        query = query.where('rides.status', '=', statuses[0]);
       }
     }
 

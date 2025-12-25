@@ -69,6 +69,7 @@ async function runMigrations() {
 
     if (Array.isArray(tables) && tables.length > 0) {
       console.log('✓ Tables created:');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tables.forEach((row: any) => {
         console.log('  -', Object.values(row)[0]);
       });
