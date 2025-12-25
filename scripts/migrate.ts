@@ -1,10 +1,25 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createPool } from 'mysql2/promise';
+import { config } from 'dotenv';
+
+// Load .env.local
+const envLocalPath = join(process.cwd(), '.env.local');
+if (existsSync(envLocalPath)) {
+  config({ path: envLocalPath });
+  console.log('✓ Loaded .env.local');
+} else {
+  console.warn('⚠ .env.local not found, using environment variables');
+}
 
 async function runMigrations() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
+
+  console.log('📦 Connecting to database...');
   const pool = createPool({
-    uri: process.env.DATABASE_URL!,
+    uri: process.env.DATABASE_URL,
     ssl: {
       minVersion: 'TLSv1.2' as const,
     }

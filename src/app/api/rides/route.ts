@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create ride
-    const ride = await db
+    // Create ride (MySQL doesn't support RETURNING)
+    const result = await db
       .insertInto('rides')
       .values({
         client_id: user.id,
@@ -121,8 +121,23 @@ export async function POST(request: NextRequest) {
         origin_longitude,
         status: 'PENDING',
       })
-      .returningAll()
-      .executeTakeFirstOrThrow();
+      .executeTakeFirst();
+
+    // Get the created ride (handle bigint insertId)
+    const insertId = result?.insertId;
+    if (!insertId) {
+      throw new Error('Failed to create ride');
+    }
+
+    const ride = await db
+      .selectFrom('rides')
+      .selectAll()
+      .where('id', '=', Number(insertId))
+      .executeTakeFirst();
+
+    if (!ride) {
+      throw new Error('Failed to retrieve created ride');
+    }
 
     return NextResponse.json({ ride }, { status: 201 });
   } catch (error) {

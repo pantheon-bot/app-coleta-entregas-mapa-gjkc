@@ -120,13 +120,26 @@ export async function PATCH(
         );
     }
 
-    // Update ride
-    const updatedRide = await db
+    // Update ride (MySQL doesn't support RETURNING)
+    await db
       .updateTable('rides')
       .set(updateData)
       .where('id', '=', rideId)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+      .execute();
+
+    // Get the updated ride
+    const updatedRide = await db
+      .selectFrom('rides')
+      .selectAll()
+      .where('id', '=', rideId)
+      .executeTakeFirst();
+
+    if (!updatedRide) {
+      return NextResponse.json(
+        { error: 'Ride not found after update' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ ride: updatedRide });
   } catch (error) {
