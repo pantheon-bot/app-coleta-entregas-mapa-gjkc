@@ -50,7 +50,8 @@ export default function ColetorPage() {
   // Get geolocation
   useEffect(() => {
     if (!navigator.geolocation) {
-      alert('Geolocalização não suportada pelo navegador');
+      console.warn('Geolocation not supported, using default location');
+      setPosition([-23.5505, -46.6333]); // São Paulo as default
       return;
     }
 
@@ -73,6 +74,7 @@ export default function ColetorPage() {
         (error) => {
           console.error('Geolocation error:', error);
           if (!position) {
+            console.warn('Using default location (São Paulo)');
             setPosition([-23.5505, -46.6333]); // São Paulo as default
           }
         }
@@ -166,11 +168,10 @@ export default function ColetorPage() {
         fetchRides();
       } else {
         const data = await res.json();
-        alert(data.error || 'Erro ao atualizar corrida');
+        console.error('Error:', data.error || 'Erro ao atualizar corrida');
       }
     } catch (error) {
       console.error('Error updating ride:', error);
-      alert('Erro ao atualizar corrida');
     } finally {
       setProcessing(false);
     }

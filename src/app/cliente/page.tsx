@@ -42,6 +42,7 @@ export default function ClientePage() {
   const [destination, setDestination] = useState('');
   const [currentRide, setCurrentRide] = useState<Ride | null>(null);
   const [requestingRide, setRequestingRide] = useState(false);
+  const [error, setError] = useState('');
 
   // Check authentication
   useEffect(() => {
@@ -60,7 +61,8 @@ export default function ClientePage() {
   // Get geolocation
   useEffect(() => {
     if (!navigator.geolocation) {
-      alert('Geolocalização não suportada pelo navegador');
+      console.warn('Geolocation not supported, using default location');
+      setPosition([-23.5505, -46.6333]); // São Paulo as default
       return;
     }
 
@@ -81,7 +83,7 @@ export default function ClientePage() {
       },
       (error) => {
         console.error('Geolocation error:', error);
-        alert('Erro ao obter localização. Usando localização padrão.');
+        console.warn('Using default location (São Paulo)');
         setPosition([-23.5505, -46.6333]); // São Paulo as default
       }
     );
@@ -130,11 +132,12 @@ export default function ClientePage() {
 
   const handleRequestRide = async () => {
     if (!selectedCollector || !destination || !position) {
-      alert('Por favor, selecione um coletor e informe o destino');
+      setError('Por favor, selecione um coletor e informe o destino');
       return;
     }
 
     setRequestingRide(true);
+    setError('');
 
     try {
       const res = await fetch('/api/rides', {
@@ -154,11 +157,11 @@ export default function ClientePage() {
         fetchCurrentRide();
       } else {
         const data = await res.json();
-        alert(data.error || 'Erro ao solicitar corrida');
+        setError(data.error || 'Erro ao solicitar corrida');
       }
     } catch (error) {
       console.error('Error requesting ride:', error);
-      alert('Erro ao solicitar corrida');
+      setError('Erro ao solicitar corrida');
     } finally {
       setRequestingRide(false);
     }
@@ -254,6 +257,12 @@ export default function ClientePage() {
                   onChange={(e) => setDestination(e.target.value)}
                 />
               </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                  {error}
+                </div>
+              )}
 
               <Button
                 className="w-full"
